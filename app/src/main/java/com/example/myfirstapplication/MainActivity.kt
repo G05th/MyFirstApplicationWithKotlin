@@ -78,6 +78,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.ui.layout.ContentScale
+import com.example.myfirstapplication.
 
 
 import org.jspecify.annotations.Nullable
@@ -90,6 +91,7 @@ data class ItemData(
     val descricao: String,
     val ImgResId: Int)
 class MainActivity : ComponentActivity() {
+    private val todoViewModel: ToDoViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
