@@ -1,114 +1,88 @@
 package com.example.myfirstapplication
 
-import androidx.compose.ui.graphics.Color
+
+import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.*
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.example.myfirstapplication.presentation.ui.ToDoRow
+import com.example.myfirstapplication.presentation.ui.AddTodoDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Text
-import androidx.compose.runtime.setValue
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.myfirstapplication.ui.theme.MyLoginTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.IconButton
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lint.kotlin.metadata.Visibility
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myfirstapplication.ui.theme.AppShapes
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.material3.AlertDialog
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.ui.layout.ContentScale
-import com.example.myfirstapplication.
-
-
-import org.jspecify.annotations.Nullable
-
-import org.w3c.dom.Text
+import com.example.myfirstapplication.presentation.ToDoViewModel
+import com.example.myfirstapplication.ui.theme.MyLoginTheme
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.provider.MediaStore
+import androidx.compose.ui.graphics.asImageBitmap
 
 data class ItemData(
     val id: Int,
     val nome: String,
     val descricao: String,
-    val ImgResId: Int)
+    val ImgResId: Int
+)
+
 class MainActivity : ComponentActivity() {
     private val todoViewModel: ToDoViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyLoginTheme{
-                NavigationApp()
+            MyLoginTheme {
+                NavigationApp(todoViewModel)
             }
         }
     }
 }
 
 @Composable
-fun NavigationApp(){
+fun NavigationApp(todoViewModel: ToDoViewModel) {
     val navController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = "login"){
-        composable("login") {LoginPage(navController)}
-        composable ("home"){ HomePage(navController)}
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") { LoginPage(navController) }
+        composable("home") { HomePage(navController = navController, viewModel = todoViewModel) }
     }
 }
 
@@ -125,158 +99,201 @@ fun LoginPage(navController: NavController) {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-
     ) {
         Text(
             text = "Entrar",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.primary
-
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
             value = email,
-            onValueChange = { newEmail -> email = newEmail },
-            label = {Text(text = "Digite o seu email")},
+            onValueChange = { email = it },
+            label = { Text("Digite o seu email") },
             singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         )
 
         TextField(
             value = senha,
-            onValueChange = {newSenha -> senha = newSenha},
-            label = { Text(text = "Digite a sua senha")},
+            onValueChange = { senha = it },
+            label = { Text("Digite a sua senha") },
             singleLine = true,
-            visualTransformation = if(senhaVisivel) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (senhaVisivel) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = {
-                    senhaVisivel = !senhaVisivel
-                }) {
-                    Icon(
-                        imageVector = if(senhaVisivel) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = if (senhaVisivel) "Ocultar senha" else "Mostrar senha"
-                    )
+                IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
+                    Icon(imageVector = if (senhaVisivel) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (senhaVisivel) "Ocultar senha" else "Mostrar senha")
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = {navController.navigate("home")},
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            onClick = { navController.navigate("home") },
+            modifier = Modifier.fillMaxWidth().height(48.dp)
         ) {
-            Text(text = "Entrar",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 16.sp
-            )
+            Text(text = "Entrar", fontSize = 16.sp)
         }
-        
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        TextButton(
-            onClick = {/* continuo ainda não sabendo*/}
-        ) {
-            Text("Esqueci a minha senha",
-                color = MaterialTheme.colorScheme.primary,
-            )
+        TextButton(onClick = { /* esqueci senha */ }) {
+            Text("Esqueci a minha senha")
         }
-
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(navController: NavController){
- val itemList = listOf(
-     ItemData(1, "Imagem 1", "Descrição 1", R.drawable.imagem1),
-     ItemData(2, "imagem 2", "Descrição 2", R.drawable.imagem2),
-     ItemData(3, "imagem 3", "Descrição 3", R.drawable.imagem3)
- )
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ){
-        item{
-            Text(text = "To-Do List",
+fun HomePage(navController: NavController, viewModel: ToDoViewModel) {
+    val todos by viewModel.todos.collectAsState()
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editingTodo by remember { mutableStateOf<com.example.myfirstapplication.domain.ToDo?>(null) }
 
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                style = TextStyle.Default,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.Gray)
-                    .padding(4.dp)
-                    .fillMaxWidth()
-
-            )
-        }
-        items(itemList, key = {it.id}) { item ->
-            ElevatedCardItem(item)
-        }
-    }
-    FloatingActionButton(
-        onClick = {navController.navigate("login")}
-    ) { }
-}
-
-@Composable
-fun ElevatedCardItem(item: ItemData){
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 16.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = item.ImgResId),
-                contentDescription = "Imagem para ${item.nome}",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(MaterialTheme.shapes.medium)
-            )
-
-            Spacer(Modifier.width(16.dp))
-
-            Column{
-                Text(
-                    text = item.nome,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = item.descricao,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("To-Do List") })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Adicionar")
             }
         }
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            if (todos.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Nenhuma tarefa. Clique + para adicionar.")
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(todos, key = { it.id }) { todo ->
+                        ToDoRow(
+                            todo = todo,
+                            onToggleDone = { t -> viewModel.toggleTodoDone(t) },
+                            onDelete = { t -> viewModel.deleteTodo(t) },
+                            onEdit = { t ->
+                                editingTodo = t
+                                showEditDialog = true
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        if (showAddDialog) {
+            AddTodoDialog(
+                onAdd = { title, description, imageUrl ->
+                    viewModel.addTodo(title, description, imageUrl)
+                    showAddDialog = false
+                },
+                onDismiss = { showAddDialog = false }
+            )
+        }
+
+        if (showEditDialog && editingTodo != null) {
+            EditTodoDialog(
+                todo = editingTodo!!,
+                onConfirm = { newTitle, newDescription, newImageUrl ->
+                    viewModel.editTodo(editingTodo!!, newTitle, newDescription, newImageUrl)
+                    showEditDialog = false
+                    editingTodo = null
+                },
+                onDismiss = {
+                    showEditDialog = false
+                    editingTodo = null
+                }
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    MyLoginTheme {
-        LoginPage(navController = rememberNavController())
+private fun rememberImageBitmapFromUriMain(uri: Uri?): ImageBitmap? {
+    val context = LocalContext.current
+    return produceState<ImageBitmap?>(initialValue = null, key1 = uri) {
+        value = uri?.let {
+            try {
+                val bitmap = if (Build.VERSION.SDK_INT < 28) {
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                } else {
+                    val src = ImageDecoder.createSource(context.contentResolver, it)
+                    ImageDecoder.decodeBitmap(src)
+                }
+                bitmap.asImageBitmap()
+            } catch (e: Exception) { null }
+        }
+    }.value
+}
+
+
+@Composable
+fun EditTodoDialog(
+    todo: com.example.myfirstapplication.domain.ToDo,
+    onConfirm: (newTitle: String, newDescription: String?, newImageUrl: String?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var title by remember { mutableStateOf(todo.title) }
+    var description by remember { mutableStateOf(todo.description ?: "") }
+    var imageUrl by remember { mutableStateOf(todo.imageUrl ?: "") }
+
+    // Uri state inicial a partir do imageUrl existente (se houver)
+    var selectedUri by remember { mutableStateOf<Uri?>(todo.imageUrl?.let { runCatching { Uri.parse(it) }.getOrNull() }) }
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        selectedUri = uri
+        imageUrl = uri?.toString() ?: ""
     }
+
+    val previewBitmap = rememberImageBitmapFromUriMain(selectedUri)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                val t = title.trim()
+                if (t.isNotEmpty()) {
+                    onConfirm(t, description.takeIf { it.isNotBlank() }, imageUrl.takeIf { it.isNotBlank() })
+                }
+            }) { Text("Salvar") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        title = { Text("Editar tarefa") },
+        text = {
+            Column {
+                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Título") }, singleLine = true)
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Descrição") })
+                Spacer(modifier = Modifier.height(8.dp))
+                // botão de escolher imagem
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.material3.Button(onClick = { launcher.launch("image/*") }) {
+                        androidx.compose.material3.Text("Escolher imagem")
+                    }
+                    if (previewBitmap != null) {
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Image(
+                            bitmap = previewBitmap,
+                            contentDescription = "Preview",
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(6.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            }
+        }
+    )
 }
