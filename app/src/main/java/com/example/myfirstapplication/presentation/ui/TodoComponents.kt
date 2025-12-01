@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -214,7 +215,7 @@ import com.example.myfirstapplication.domain.ToDo
                 // Ações (toggle / delete)
                 IconButton(onClick = { onToggleDone(todo) }) {
                     Icon(
-                        imageVector = if (todo.isDone) Icons.Default.RadioButtonUnchecked else Icons.Default.RadioButtonUnchecked,
+                        imageVector = if (todo.isDone) Icons.Default.RadioButtonUnchecked else Icons.Default.RadioButtonChecked,
                         contentDescription = "Toggle"
                     )
                 }
