@@ -56,6 +56,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.provider.MediaStore
 import androidx.compose.ui.graphics.asImageBitmap
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import android.util.Log
 
 data class ItemData(
     val id: Int,
@@ -64,6 +67,7 @@ data class ItemData(
     val ImgResId: Int
 )
 
+private const val TAG = "MaibActivity"
 class MainActivity : ComponentActivity() {
     private val todoViewModel: ToDoViewModel by viewModels()
 
