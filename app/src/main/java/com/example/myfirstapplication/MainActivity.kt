@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import android.util.Log
+import com.example.myfirstapplication.navigation.AppNavHost
 
 data class ItemData(
     val id: Int,
@@ -75,7 +76,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyLoginTheme {
-                NavigationApp(todoViewModel)
+                AppNavHost(viewModel = todoViewModel)
             }
         }
     }
