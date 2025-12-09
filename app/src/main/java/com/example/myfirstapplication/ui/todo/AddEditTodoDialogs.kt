@@ -25,7 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 
 @Composable
 fun EditTodoDialog(

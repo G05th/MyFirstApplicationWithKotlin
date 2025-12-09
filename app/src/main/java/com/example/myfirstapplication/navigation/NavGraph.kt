@@ -5,6 +5,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myfirstapplication.presentation.ToDoViewModel
+import com.example.myfirstapplication.ui.login.LoginScreen
+import com.example.myfirstapplication.ui.register.RegisterScreen
+import com.example.myfirstapplication.ui.home.HomeScreen
 
 @Composable
 fun AppNavHost(viewModel: ToDoViewModel) {
